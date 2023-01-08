@@ -14,7 +14,20 @@ interface FormData {
 
 const Newnote: NextPage = () => {
   const utils = trpc.useContext();
-  const addNewNote = trpc.mynotes.newnote.useMutation({});
+  const addNewNote = trpc.mynotes.newnote.useMutation({
+    onMutate: () => {
+      utils.mynotes.allNotes.cancel();
+      const optimisticUpdate = utils.mynotes.allNotes.getData();
+
+      if (optimisticUpdate) {
+        utils.mynotes.allNotes.setData(optimisticUpdate);
+      }
+    },
+    onSettled: () => {
+      utils.mynotes.allNotes.invalidate();
+    },
+  });
+
   const [data, setData] = useState<FormData>({
     title: "" as string | undefined,
     description: "" as string | undefined,

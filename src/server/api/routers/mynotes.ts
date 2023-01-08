@@ -15,7 +15,8 @@ export const notesRouter = createTRPCRouter({
         .trim(),
       description: z.string(),
     })
-  )    .mutation(async ({ ctx, input }) => {
+  )    
+  .mutation(async ({ ctx, input }) => {
     try {
       return await ctx.prisma.notes.create({
         data: {
@@ -27,7 +28,43 @@ export const notesRouter = createTRPCRouter({
       console.log(`Note cannot be created ${error}`);
     }
   }),
+  
+  //fetch all notes
+  allNotes: publicProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.prisma?.notes?.findMany({
+        select: {
+          title: true,
+          id: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    } catch (error) {
+      console.log(`Cannot fetch your notes ${error}`);
+    }
+  }),
 
+    //fetch a single note
+    detailNote: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+      try {
+        return await ctx.prisma.notes.findUnique({
+          where: {
+            id,
+          },
+        });
+      } catch (error) {
+        console.log(`Note detail not found ${error}`);
+      }
+    }),
 
 
 
