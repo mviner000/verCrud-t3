@@ -66,7 +66,60 @@ export const notesRouter = createTRPCRouter({
       }
     }),
 
+  //update a note
+  updateNote: publicProcedure
+    .input(
+      z.object({
+        title: z
+          .string()
+          .min(5, { message: "Must be 5 or more characters of length!" })
+          .max(200, {
+            message: "Must not be more than 200 characters of length!",
+          })
+          .trim(),
+        description: z.string(),
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      try {
+        return await ctx.prisma.notes.update({
+          where: {
+            id,
+          },
+          data: {
+            title: input.title,
+            description: input.description,
+          },
+        });
+      } catch (error) {
+        console.log(`Note cannot be updated ${error}`);
+      }
+    }),
 
+
+    //delete a note
+  deleteNote: publicProcedure
+  .input(
+    z.object({
+      id: z.string(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { id } = input;
+    try {
+      return await ctx.prisma.notes.delete({
+        where: {
+          id,
+        },
+      });
+    } catch (error) {
+      console.log(`Note cannot be deleted ${error}`);
+    }
+  }),
+
+  
 
 });
 
